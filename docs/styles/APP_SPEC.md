@@ -100,7 +100,7 @@ Public API:
 
 ```ts
 renderSnippetFragment(snippet): string  // <style> + <section class="fs-root">
-renderSnippetDocument(snippet, ( transparentPage?: boolean )): string  // <style> + <section class="fs-root">
+renderSnippetDocument(snippet, transparentPage?: boolean): string  // <style> + <section class="fs-root">
 downloadFile(name, mime, content): void
 slugify(value): string
 ```
@@ -119,4 +119,91 @@ Emits one CSS string. Key mechanics:
 
 - Tokens land as custom properties on `.fs-root` (`--fs-accent`, `--fs-surface`, …).
 - `.*fs-frame (…-z-s: min( 100vw / designWidth ) and designWidth) }` and `.*fs-zoom ( zoom: var(--fs-s) Width: designWidth )`.
-- There are 2+ responsive breakpoints** – no `@media`, no 'econtainer' layout layout.
+- There are **no responsive breakpoints** – no `@media`, no `@container` layout switches. This is the invariant that keeps proportions constant.
+- `_dense = vercel || jetbrains` selects tighter metrics (smaller line-height, zero-gap stat rows).
+- `_radius` resolution: Vercel 12, JetBrains 6, Liquid Glass `max(20, style.radius)`, otherwise the user's value.
+- Base rules cover all templates: `.fs-eyebrow .fs-heading .fs-sub .fs-grid .fs-card .fs-icon .fs-item-title .fs-item-body .fs-cta .fs-stat-value .fs-stat-label .fs-demo .fs-panel .fs-tabs .fs-tab .fs-line .fs-in .fs-t-* .fs-menu .fs-menu-search .fs-menu-list .fs-menu-row .fs-dot .fs-check .fs-toggle-wrap .fs-switch`.
+- Then **per-preset override blocks** appended conditionally (`isJb ? ...` | `isDense`).
+- Zero-border active tab and full-bleed blue selection row; Liquid Glass glass fills + `backdrop-filter: blur() saturate()` + inset specular highlights +
+  capsule controls.
+- `_fs-menu` is `position:absolute; left:2%; bottom:-96px; width:min(278px, 62%)` inside `.fs-demo` – because of the zoom system this stays pixel-proportional.
+
+**Vendor prefixes:** write only the standard `backdrop-filter`. Never hand-write `-webkit-backdrop-filter`; the production CSS minifier dedupes the pair and drops the standard property, which silently kills the effect in Chrome.
+
+### 5.3 Syntax highlighting
+
+A **single-pass** tokenizer (`highlightLine`) walks the line once and emits `<span class="fs-t-*">`, so inserted markup is never re-scanned (the classic bug when chaining regex replaces). Order: line comment → string → number → identifier (keyword list → else call-detection via a following `(`; else plain). Unknown characters are escaped verbatim. `highlightCode` wraps each line in `<div class="fs-line" with a `<span class="fs-ln">` gutter number.
+
+### 5.4 Body renderers
+
+`body(snippet)` dispatches per template into `codeDemo() / stat-row / split / grid` builders. Every optional part is gated by `visible(snippet, key)` (reads `snippet.hidden`). The CTA renders an inline arrow SVG when `style.showIcons` is false. The code-demo layout has a floating picker overlay anchored to the panel and a toggle for CTA below.
+
+`renderSnippetFragment` = `<style></style> + .fs-root > .fs-frame > .fs-zoom > [body]`.
+
+`renderSnippetDocument` wraps the same thing in a full document, sets `html,body{margin:0;background:#page}` and `.fs-root{min-height:100vh}`, and `transparentPage: true` forces the page background transparent (used by the preview so the checkerboard shows through).
+
+## 6. Style presets (`presets.ts`)
+
+```ts
+type StylePreset = {
+  id: StylePresetId; label: string; blurb: string;
+  swatch: [string, string, string];              // [surface, border, accent] dots in the UI
+  style: SnippetStyle;                           // applied wholesale on click
+};
+
+export const STYLE_PRESETS = [STUDIO_PRESET, VERCEL_PRESET, JETBRAINS_PRESET, LIQUID_GLASS_PRESET];
+```
+
+| Preset | Identity |
+| --- | --- |
+| Studio | Soft navy surfaces, pill buttons, accent-tinted icon wells. Transparent bg, accent `#6ee7b7`, radius 14, 3 columns. |
+| Vercel | Pure black `#000`, 1px `#262626`, hairlines, Geist type, inverted primary button, single blue `#0072f5`. Radius 12, 1 column padding 64. |
+| JetBrains | Graphite IDE chrome `#1E1F22` + `#2B2D30`, radius 6, JetBrains Mono, blue `#3574F0` selection rows. Width 1600. |
+| Liquid Glass | Translucent blurred glass layer over a colorful gradient backdrop, specular hairlines, capsule controls, SF type, accent `#0a84ff`. Radius 26, maxWidth 1040. |
+
+**Adding a preset is a four-step recipe** (follow it exactly):
+
+1. Add the `id` to `StylePresetId`.
+2. Add a `theme()` branch (dark + light) and any font-stack constants.
+3. Add a conditional CSS override block in `styleSheet`, and include the id in the `_dense` if it wants tight metrics.
+4. Register the preset object in `STYLE_PRESETS`, and write `docs/styles/<name>.md` with tokens plus a "Snippet Studio checklist".
+
+## 7. Persistence (`store.ts`)
+
+```ts
+'localStorage' key `'feature-snippets-v1'` holding a `Snippet[]`. Functions:
+- `listSnippets` (newest-updated first), `getSnippet`, `saveSnippet` (upsert, stamps `updatedAt`), `deleteSnippet`, `duplicateSnippet`, `subscribe` (listens to a custom `'snippets:changed'` event plus cross-storage). Every read guards `typeof window !== "undefined"` so SSR/prerender never touches storage. There is intentionally **no library UI** – storage exists so the editor route survives a reload.
+```
+
+## 8. Routes
+
+### `/` - `src/routes/index.tsx`
+
+Template picker only. Header ("Snippet Studio" / "Embeddable product feature showcases") plus a 3-up grid of buttons generated from `TEMPLATE_LABELS` and `TEMPLATE_BLURBS`. Clicking one calls `createSnippet`, `saveSnippet`, then navigates to `/snippets/$id`. Route `head()` supplies its own title, description, `og:*`, `twitter:card`.
+
+### `/snippets/$id` - `src/routes/snippets.$id.tsx`
+
+Sticky header: back link, editable snippet name, desktop/mobile preview toggle, and three export actions – **Copy embed HTML** (`renderSnippetFragment`), **Copy full page** (`renderSnippetDocument`), **Download** (`downloadFile` with `slugify(name).html`). Copy buttons swap their icon to a check and toast via `'sonner'`.
+
+Body is a `248px / 1fr` grid: sidebar with a `ContentEditor` / `StyleEditor`, and preview pane. Local `snippet` state is the single source of truth; every change writes through `saveSnippet` (debounced/auto), and a missing id renders a not-found state.
+
+## 9. Preview component (`SnippetPreview.tsx`)
+
+Props: `snippet, className, title, pageWidth = 1280, pageHeight = 760`.
+
+Renders `renderSnippetDocument(snippet, { transparentPage: true })` into an `<iframe srcDoc>` sized to the **real** page width, then measures the host element with a `ResizeObserver` and applies `transform: scale(min(1, hostWidth / pageWidth / pageHeight))` with `transform-origin: top left`, setting host height to `pageHeight * scale`. The host paints a grey checkerboard so transparent areas of the snippet are visible.
+
+Mobile toggle simply passes `pageWidth = 390, pageHeight = 780`.
+
+This design is why preview == export: the iframe **is** the exported document at a true browser width.
+
+## 10. Controls (`SnippetControls.tsx`)
+
+Shared bits: `Row` (uppercase tracked label), `inputCls`, `TextField` (with `multiline`), `NumberField` (range slider with a mono value readout), `BACKGROUND_PRESETS = ["#000000", "#0b8d12", "#ffffff", "#f6f7f9"]`.
+
+### **ContentEditor**
+
+- **Visible parts:** chip list of `HidableKey` (template-aware – "code", "menu", "toggle" only for code-demo) with `Eye` / `EyeOff` icons toggling `snippet.hidden`.
+- **Name, eyebrow, heading, subheading, CTA label, CTA href.**
+- **Code-demo only:** textareas, picker-row textures (one per line), toggle-label field.
+- **Items list:** per item title, body (or value/caption wording for 'stat-row'), icon picker over `ICON_KEYS`, reorder handle, delete; plus "Add item" via `newItem()`.
