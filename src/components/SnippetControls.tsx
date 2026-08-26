@@ -4,6 +4,7 @@ import { ACCENT_PRESETS, newItem } from "@/lib/snippets/templates";
 import { HIDABLE_LABELS, ICON_KEYS, TEMPLATE_LABELS } from "@/lib/snippets/types";
 import type { HidableKey, Snippet, SnippetStyle, TemplateId } from "@/lib/snippets/types";
 
+
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
@@ -19,6 +20,7 @@ const BACKGROUND_PRESETS = ["#000000", "#0b0d12", "#ffffff", "#f6f7f9"];
 
 const inputCls =
   "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-foreground/50";
+
 
 export function TextField({
   label,
@@ -137,6 +139,7 @@ export function ContentEditor({
           })}
         </div>
       </Row>
+
 
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField label="Eyebrow" value={snippet.eyebrow} onChange={(v) => patch({ eyebrow: v })} />
@@ -305,6 +308,7 @@ export function StyleEditor({
           {STYLE_PRESETS.map((preset) => {
             const active = (s.preset ?? "studio") === preset.id;
             return (
+
               <button
                 key={preset.id}
                 type="button"
@@ -344,7 +348,10 @@ export function StyleEditor({
         </p>
       )}
 
+
+
       <Row label="Color scheme">
+
         <div className="flex gap-2">
           {(["dark", "light"] as const).map((scheme) => (
             <button
@@ -401,6 +408,7 @@ export function StyleEditor({
       </Row>
 
       <Row label="Accent">
+
         <div className="flex items-center gap-2">
           {ACCENT_PRESETS.map((hex) => (
             <button
