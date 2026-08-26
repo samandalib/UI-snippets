@@ -116,6 +116,45 @@ export function SnippetControls({ snippet, onChange }: SnippetControlsProps) {
               onChange={v => updateSnippet({ ctaHref: v })}
             />
 
+            {/* Code (code-demo only) */}
+            {snippet.template === 'code-demo' && (
+              <InputField
+                label="Code"
+                value={snippet.code || ''}
+                onChange={v => updateSnippet({ code: v })}
+                multiline
+                placeholder="const result = await generateText({ ... })"
+              />
+            )}
+
+            {/* Menu Items (code-demo only) */}
+            {snippet.template === 'code-demo' && (
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-2">Menu Items</label>
+                <textarea
+                  value={(snippet.menuItems || []).join('\n')}
+                  onChange={e =>
+                    updateSnippet({
+                      menuItems: e.target.value.split('\n').filter(s => s.trim()),
+                    })
+                  }
+                  placeholder="One item per line"
+                  className="w-full px-2 py-1 text-sm border rounded"
+                  rows={3}
+                />
+              </div>
+            )}
+
+            {/* Toggle Label (code-demo only) */}
+            {snippet.template === 'code-demo' && (
+              <InputField
+                label="Toggle Label"
+                value={snippet.toggleLabel || ''}
+                onChange={v => updateSnippet({ toggleLabel: v })}
+                placeholder="e.g., Streaming"
+              />
+            )}
+
             {/* Items */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-2">Items</label>
@@ -242,6 +281,23 @@ export function SnippetControls({ snippet, onChange }: SnippetControlsProps) {
               >
                 <option value="dark">Dark</option>
                 <option value="light">Light</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-2">Font</label>
+              <select
+                value={snippet.style.font}
+                onChange={e =>
+                  updateSnippet({
+                    style: { ...snippet.style, font: e.target.value as 'sans' | 'serif' | 'mono' },
+                  })
+                }
+                className="w-full px-2 py-1 text-sm border rounded"
+              >
+                <option value="sans">Sans Serif</option>
+                <option value="serif">Serif</option>
+                <option value="mono">Monospace</option>
               </select>
             </div>
 
