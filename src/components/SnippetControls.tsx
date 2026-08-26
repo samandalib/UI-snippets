@@ -1,484 +1,479 @@
-import { useState } from 'react'
-import { STYLE_PRESETS, ACCENT_PRESETS, ICON_KEYS, HIDABLE_LABELS } from '@/lib/snippets'
-import type { Snippet, HidableKey } from '@/lib/snippets'
+import { Check, Eye, EyeOff, GripVertical, Plus, Trash2 } from "lucide-react";
+import { STYLE_PRESETS } from "@/lib/snippets/presets";
+import { ACCENT_PRESETS, newItem } from "@/lib/snippets/templates";
+import { HIDABLE_LABELS, ICON_KEYS, TEMPLATE_LABELS } from "@/lib/snippets/types";
+import type { HidableKey, Snippet, SnippetStyle, TemplateId } from "@/lib/snippets/types";
 
-interface SnippetControlsProps {
-  snippet: Snippet
-  onChange: (snippet: Snippet) => void
-}
-
-export function SnippetControls({ snippet, onChange }: SnippetControlsProps) {
-  const [tab, setTab] = useState<'content' | 'style'>('content')
-
-  const updateSnippet = (updates: Partial<Snippet>) => {
-    onChange({ ...snippet, ...updates })
-  }
-
-  const toggleHidden = (key: HidableKey) => {
-    const hidden = new Set(snippet.hidden || [])
-    if (hidden.has(key)) {
-      hidden.delete(key)
-    } else {
-      hidden.add(key)
-    }
-    updateSnippet({ hidden })
-  }
-
-  const templateHidableKeys: Record<string, HidableKey[]> = {
-    'feature-grid': ['eyebrow', 'heading', 'subheading', 'cta', 'items'],
-    'feature-split': ['eyebrow', 'heading', 'subheading', 'cta', 'items'],
-    'stat-row': ['eyebrow', 'heading', 'subheading', 'cta', 'items'],
-    'code-demo': ['eyebrow', 'heading', 'subheading', 'cta', 'code', 'menu', 'toggle'],
-  }
-
-  const hidableKeys = templateHidableKeys[snippet.template] || []
-
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Tabs */}
-      <div className="border-b flex">
-        <button
-          onClick={() => setTab('content')}
-          className={`flex-1 py-2 px-4 text-sm font-medium ${
-            tab === 'content'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Content
-        </button>
-        <button
-          onClick={() => setTab('style')}
-          className={`flex-1 py-2 px-4 text-sm font-medium ${
-            tab === 'style'
-              ? 'border-b-2 border-blue-500 text-blue-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Style
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {tab === 'content' && (
-          <>
-            {/* Visible Parts */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2 uppercase">Visible Parts</label>
-              <div className="flex flex-wrap gap-2">
-                {hidableKeys.map(key => (
-                  <button
-                    key={key}
-                    onClick={() => toggleHidden(key)}
-                    className={`px-3 py-1 text-sm rounded ${
-                      !(snippet.hidden?.has(key))
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    {HIDABLE_LABELS[key]}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Text Fields */}
-            <InputField
-              label="Name"
-              value={snippet.name}
-              onChange={v => updateSnippet({ name: v })}
-            />
-            <InputField
-              label="Eyebrow"
-              value={snippet.eyebrow}
-              onChange={v => updateSnippet({ eyebrow: v })}
-            />
-            <InputField
-              label="Heading"
-              value={snippet.heading}
-              onChange={v => updateSnippet({ heading: v })}
-            />
-            <InputField
-              label="Subheading"
-              value={snippet.subheading}
-              onChange={v => updateSnippet({ subheading: v })}
-              multiline
-            />
-            <InputField
-              label="CTA Label"
-              value={snippet.ctaLabel}
-              onChange={v => updateSnippet({ ctaLabel: v })}
-            />
-            <InputField
-              label="CTA Href"
-              value={snippet.ctaHref}
-              onChange={v => updateSnippet({ ctaHref: v })}
-            />
-
-            {/* Code (code-demo only) */}
-            {snippet.template === 'code-demo' && (
-              <InputField
-                label="Code"
-                value={snippet.code || ''}
-                onChange={v => updateSnippet({ code: v })}
-                multiline
-                placeholder="const result = await generateText({ ... })"
-              />
-            )}
-
-            {/* Menu Items (code-demo only) */}
-            {snippet.template === 'code-demo' && (
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-2">Menu Items</label>
-                <textarea
-                  value={(snippet.menuItems || []).join('\n')}
-                  onChange={e =>
-                    updateSnippet({
-                      menuItems: e.target.value.split('\n').filter(s => s.trim()),
-                    })
-                  }
-                  placeholder="One item per line"
-                  className="w-full px-2 py-1 text-sm border rounded"
-                  rows={3}
-                />
-              </div>
-            )}
-
-            {/* Toggle Label (code-demo only) */}
-            {snippet.template === 'code-demo' && (
-              <InputField
-                label="Toggle Label"
-                value={snippet.toggleLabel || ''}
-                onChange={v => updateSnippet({ toggleLabel: v })}
-                placeholder="e.g., Streaming"
-              />
-            )}
-
-            {/* Items */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2">Items</label>
-              <div className="space-y-3">
-                {snippet.items.map((item, idx) => (
-                  <div key={item.id} className="p-3 border rounded bg-gray-50">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium">Item {idx + 1}</span>
-                      <button
-                        onClick={() => {
-                          const items = snippet.items.filter(i => i.id !== item.id)
-                          updateSnippet({ items })
-                        }}
-                        className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Title"
-                      value={item.title}
-                      onChange={e => {
-                        const items = snippet.items.map(i =>
-                          i.id === item.id ? { ...i, title: e.target.value } : i
-                        )
-                        updateSnippet({ items })
-                      }}
-                      className="w-full px-2 py-1 text-sm border rounded mb-2"
-                    />
-                    <textarea
-                      placeholder="Body"
-                      value={item.body}
-                      onChange={e => {
-                        const items = snippet.items.map(i =>
-                          i.id === item.id ? { ...i, body: e.target.value } : i
-                        )
-                        updateSnippet({ items })
-                      }}
-                      className="w-full px-2 py-1 text-sm border rounded mb-2"
-                      rows={2}
-                    />
-                    <select
-                      value={item.icon}
-                      onChange={e => {
-                        const items = snippet.items.map(i =>
-                          i.id === item.id ? { ...i, icon: e.target.value as any } : i
-                        )
-                        updateSnippet({ items })
-                      }}
-                      className="w-full px-2 py-1 text-sm border rounded"
-                    >
-                      {ICON_KEYS.map(k => (
-                        <option key={k} value={k}>
-                          {k}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
-                <button
-                  onClick={() => {
-                    const newItem = {
-                      id: Math.random().toString(36).slice(2, 9),
-                      title: 'New item',
-                      body: 'Add a description',
-                      icon: 'sparkles' as const,
-                    }
-                    updateSnippet({ items: [...snippet.items, newItem] })
-                  }}
-                  className="w-full px-3 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  + Add Item
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {tab === 'style' && (
-          <>
-            {/* Presets */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2">Style Presets</label>
-              <div className="space-y-2">
-                {STYLE_PRESETS.map(preset => (
-                  <button
-                    key={preset.id}
-                    onClick={() => updateSnippet({ style: preset.style })}
-                    className={`w-full p-3 rounded border-2 text-left transition ${
-                      snippet.style.preset === preset.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 bg-white hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      {preset.swatch.map((color, i) => (
-                        <div
-                          key={i}
-                          className="w-4 h-4 rounded"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))}
-                      <span className="text-sm font-medium">{preset.label}</span>
-                      {snippet.style.preset === preset.id && <span className="ml-auto text-sm">✓</span>}
-                    </div>
-                    <p className="text-xs text-gray-600">{preset.blurb}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Style Options */}
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2">Scheme</label>
-              <select
-                value={snippet.style.scheme}
-                onChange={e =>
-                  updateSnippet({
-                    style: { ...snippet.style, scheme: e.target.value as 'dark' | 'light' },
-                  })
-                }
-                className="w-full px-2 py-1 text-sm border rounded"
-              >
-                <option value="dark">Dark</option>
-                <option value="light">Light</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2">Font</label>
-              <select
-                value={snippet.style.font}
-                onChange={e =>
-                  updateSnippet({
-                    style: { ...snippet.style, font: e.target.value as 'sans' | 'serif' | 'mono' },
-                  })
-                }
-                className="w-full px-2 py-1 text-sm border rounded"
-              >
-                <option value="sans">Sans Serif</option>
-                <option value="serif">Serif</option>
-                <option value="mono">Monospace</option>
-              </select>
-            </div>
-
-            <InputField
-              label="Background"
-              value={snippet.style.background || ''}
-              onChange={v =>
-                updateSnippet({
-                  style: { ...snippet.style, background: v || undefined },
-                })
-              }
-              placeholder="e.g., transparent, #000, url(...)"
-            />
-
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-2">Accent Color</label>
-              <div className="flex gap-2 mb-2">
-                {ACCENT_PRESETS.map(color => (
-                  <button
-                    key={color}
-                    onClick={() =>
-                      updateSnippet({
-                        style: { ...snippet.style, accent: color },
-                      })
-                    }
-                    className="w-8 h-8 rounded border-2"
-                    style={{
-                      backgroundColor: color,
-                      borderColor: snippet.style.accent === color ? '#000' : '#ccc',
-                    }}
-                  />
-                ))}
-              </div>
-              <input
-                type="color"
-                value={snippet.style.accent}
-                onChange={e =>
-                  updateSnippet({
-                    style: { ...snippet.style, accent: e.target.value },
-                  })
-                }
-                className="w-full h-10 cursor-pointer"
-              />
-            </div>
-
-            <RangeField
-              label="Columns"
-              value={snippet.style.columns}
-              onChange={v =>
-                updateSnippet({
-                  style: { ...snippet.style, columns: v },
-                })
-              }
-              min={1}
-              max={4}
-            />
-
-            <RangeField
-              label="Border Radius"
-              value={snippet.style.radius}
-              onChange={v =>
-                updateSnippet({
-                  style: { ...snippet.style, radius: v },
-                })
-              }
-              min={0}
-              max={24}
-            />
-
-            <RangeField
-              label="Max Width"
-              value={snippet.style.maxWidth}
-              onChange={v =>
-                updateSnippet({
-                  style: { ...snippet.style, maxWidth: v },
-                })
-              }
-              min={600}
-              max={1600}
-              step={100}
-            />
-
-            <RangeField
-              label="Padding"
-              value={snippet.style.padding}
-              onChange={v =>
-                updateSnippet({
-                  style: { ...snippet.style, padding: v },
-                })
-              }
-              min={0}
-              max={96}
-            />
-
-            <div>
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={snippet.style.showIcons}
-                  onChange={e =>
-                    updateSnippet({
-                      style: { ...snippet.style, showIcons: e.target.checked },
-                    })
-                  }
-                />
-                Show Icons
-              </label>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
+    <label className="block">
+      <span className="mb-1.5 block text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
 }
 
-function InputField({
+const BACKGROUND_PRESETS = ["#000000", "#0b0d12", "#ffffff", "#f6f7f9"];
+
+const inputCls =
+  "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-foreground/50";
+
+export function TextField({
   label,
   value,
   onChange,
-  multiline,
   placeholder,
+  multiline,
 }: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  multiline?: boolean
-  placeholder?: string
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  multiline?: boolean;
 }) {
   return (
-    <div>
-      <label className="block text-xs font-bold text-gray-700 mb-1">{label}</label>
+    <Row label={label}>
       {multiline ? (
         <textarea
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full px-2 py-1 text-sm border rounded"
           rows={2}
+          className={`${inputCls} resize-y`}
+          value={value}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
         />
       ) : (
         <input
-          type="text"
+          className={inputCls}
           value={value}
-          onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full px-2 py-1 text-sm border rounded"
+          onChange={(e) => onChange(e.target.value)}
         />
       )}
-    </div>
-  )
+    </Row>
+  );
 }
 
-function RangeField({
+export function NumberField({
   label,
   value,
-  onChange,
   min,
   max,
   step = 1,
+  suffix,
+  onChange,
 }: {
-  label: string
-  value: number
-  onChange: (v: number) => void
-  min: number
-  max: number
-  step?: number
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  suffix?: string;
+  onChange: (v: number) => void;
 }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-gray-700 mb-1">
-        {label}: {value}
-      </label>
+      <div className="mb-1.5 flex items-baseline justify-between">
+        <span className="text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+          {label}
+        </span>
+        <span className="font-mono text-xs text-foreground">
+          {value}
+          {suffix}
+        </span>
+      </div>
       <input
         type="range"
         min={min}
         max={max}
         step={step}
         value={value}
-        onChange={e => onChange(Number(e.target.value))}
-        className="w-full"
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="h-1 w-full cursor-pointer appearance-none rounded-full bg-border accent-foreground"
       />
     </div>
-  )
+  );
+}
+
+export function ContentEditor({
+  snippet,
+  onChange,
+}: {
+  snippet: Snippet;
+  onChange: (next: Snippet) => void;
+}) {
+  const patch = (part: Partial<Snippet>) => onChange({ ...snippet, ...part });
+  const isStats = snippet.template === "stat-row";
+  const isCode = snippet.template === "code-demo";
+
+  const hidableKeys: HidableKey[] = isCode
+    ? ["eyebrow", "heading", "subheading", "items", "code", "menu", "toggle", "cta"]
+    : ["eyebrow", "heading", "subheading", "items", "cta"];
+  const toggleHidden = (key: HidableKey) =>
+    patch({ hidden: { ...snippet.hidden, [key]: snippet.hidden?.[key] !== true } });
+
+  return (
+    <div className="space-y-5">
+      <Row label="Visible parts">
+        <div className="flex flex-wrap gap-1.5">
+          {hidableKeys.map((key) => {
+            const shown = snippet.hidden?.[key] !== true;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => toggleHidden(key)}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[0.7rem] transition-colors ${
+                  shown
+                    ? "border-foreground/50 text-foreground"
+                    : "border-border text-muted-foreground line-through"
+                }`}
+              >
+                {shown ? <Eye className="size-3" /> : <EyeOff className="size-3" />}
+                {HIDABLE_LABELS[key]}
+              </button>
+            );
+          })}
+        </div>
+      </Row>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField label="Eyebrow" value={snippet.eyebrow} onChange={(v) => patch({ eyebrow: v })} />
+        <Row label="Template">
+          <select
+            className={inputCls}
+            value={snippet.template}
+            onChange={(e) => patch({ template: e.target.value as TemplateId })}
+          >
+            {Object.entries(TEMPLATE_LABELS).map(([id, label]) => (
+              <option key={id} value={id}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </Row>
+      </div>
+      <TextField label="Heading" value={snippet.heading} onChange={(v) => patch({ heading: v })} />
+      <TextField
+        label="Subheading"
+        multiline
+        value={snippet.subheading}
+        onChange={(v) => patch({ subheading: v })}
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          label="Button label"
+          value={snippet.ctaLabel}
+          onChange={(v) => patch({ ctaLabel: v })}
+          placeholder="Leave blank to hide"
+        />
+        <TextField label="Button link" value={snippet.ctaHref} onChange={(v) => patch({ ctaHref: v })} />
+      </div>
+
+      {isCode && (
+        <div className="space-y-4 border-t border-border pt-5">
+          <Row label="Code">
+            <textarea
+              rows={9}
+              className={`${inputCls} resize-y font-mono text-xs`}
+              value={snippet.code ?? ""}
+              onChange={(e) => patch({ code: e.target.value })}
+            />
+          </Row>
+          <Row label="Picker rows (one per line)">
+            <textarea
+              rows={5}
+              className={`${inputCls} resize-y`}
+              value={(snippet.menuItems ?? []).join("\n")}
+              onChange={(e) =>
+                patch({ menuItems: e.target.value.split("\n").filter((l) => l.trim() !== "") })
+              }
+            />
+          </Row>
+          <TextField
+            label="Toggle label"
+            value={snippet.toggleLabel ?? ""}
+            onChange={(v) => patch({ toggleLabel: v })}
+            placeholder="Leave blank to hide"
+          />
+        </div>
+      )}
+
+      <div className="border-t border-border pt-5">
+        <div className="flex items-center justify-between">
+          <p className="text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+            {isCode ? "Tabs" : isStats ? "Metrics" : "Features"}
+          </p>
+          <button
+            type="button"
+            onClick={() => patch({ items: [...snippet.items, newItem()] })}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs text-foreground transition-colors hover:border-foreground/50"
+          >
+            <Plus className="size-3.5" /> Add
+          </button>
+        </div>
+
+        <div className="mt-4 space-y-4">
+          {snippet.items.map((item, i) => (
+            <div key={item.id} className="rounded-lg border border-border bg-background/40 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 font-mono text-[0.65rem] tracking-[0.2em] text-muted-foreground">
+                  <GripVertical className="size-3.5" />
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Remove item"
+                  onClick={() =>
+                    patch({ items: snippet.items.filter((other) => other.id !== item.id) })
+                  }
+                  className="text-muted-foreground transition-colors hover:text-destructive"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+              <div className="space-y-3">
+                <TextField
+                  label={isCode ? "Tab label" : isStats ? "Value" : "Title"}
+                  value={item.title}
+                  onChange={(v) =>
+                    patch({
+                      items: snippet.items.map((o) => (o.id === item.id ? { ...o, title: v } : o)),
+                    })
+                  }
+                />
+                {!isCode && (
+                  <TextField
+                    label={isStats ? "Caption" : "Description"}
+                    multiline
+                    value={item.body}
+                    onChange={(v) =>
+                      patch({
+                        items: snippet.items.map((o) => (o.id === item.id ? { ...o, body: v } : o)),
+                      })
+                    }
+                  />
+                )}
+                {!isStats && !isCode && (
+                  <Row label="Icon">
+                    <select
+                      className={inputCls}
+                      value={item.icon}
+                      onChange={(e) =>
+                        patch({
+                          items: snippet.items.map((o) =>
+                            o.id === item.id
+                              ? { ...o, icon: e.target.value as typeof item.icon }
+                              : o,
+                          ),
+                        })
+                      }
+                    >
+                      {ICON_KEYS.map((key) => (
+                        <option key={key} value={key}>
+                          {key}
+                        </option>
+                      ))}
+                    </select>
+                  </Row>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function StyleEditor({
+  snippet,
+  onChange,
+}: {
+  snippet: Snippet;
+  onChange: (next: Snippet) => void;
+}) {
+  const s = snippet.style;
+  const set = <K extends keyof SnippetStyle>(key: K, value: SnippetStyle[K]) =>
+    onChange({ ...snippet, style: { ...s, [key]: value } });
+
+  return (
+    <div className="space-y-5">
+      <Row label="Style preset">
+        <div className="space-y-2">
+          {STYLE_PRESETS.map((preset) => {
+            const active = (s.preset ?? "studio") === preset.id;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => onChange({ ...snippet, style: { ...preset.style } })}
+                className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
+                  active
+                    ? "border-foreground/60 bg-foreground/[0.08]"
+                    : "border-border hover:border-foreground/40"
+                }`}
+              >
+                <span className="flex shrink-0 items-center gap-1">
+                  {preset.swatch.map((hex) => (
+                    <span
+                      key={hex}
+                      style={{ backgroundColor: hex }}
+                      className="size-3.5 rounded-full border border-border"
+                    />
+                  ))}
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-xs font-medium text-foreground">{preset.label}</span>
+                  <span className="block text-[0.7rem] leading-snug text-muted-foreground">
+                    {preset.blurb}
+                  </span>
+                </span>
+                {active && <Check className="ml-auto size-3.5 shrink-0 text-foreground" />}
+              </button>
+            );
+          })}
+        </div>
+      </Row>
+
+      {(s.preset ?? "studio") !== "studio" && (
+        <p className="-mt-2 text-[0.7rem] leading-snug text-muted-foreground">
+          This preset owns the typography, surfaces, borders and syntax colors. Accent, columns,
+          width and padding below still apply.
+        </p>
+      )}
+
+      <Row label="Color scheme">
+        <div className="flex gap-2">
+          {(["dark", "light"] as const).map((scheme) => (
+            <button
+              key={scheme}
+              type="button"
+              onClick={() => set("scheme", scheme)}
+              className={`flex-1 rounded-md border px-3 py-2 text-xs capitalize transition-colors ${
+                s.scheme === scheme
+                  ? "border-foreground/60 bg-foreground/[0.08] text-foreground"
+                  : "border-border text-muted-foreground hover:border-foreground/40"
+              }`}
+            >
+              {scheme}
+            </button>
+          ))}
+        </div>
+      </Row>
+
+      <Row label="Background">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => set("background", "transparent")}
+            className={`rounded-md border px-3 py-2 text-xs transition-colors ${
+              (s.background ?? "transparent") === "transparent"
+                ? "border-foreground/60 bg-foreground/[0.08] text-foreground"
+                : "border-border text-muted-foreground hover:border-foreground/40"
+            }`}
+          >
+            Transparent
+          </button>
+          {BACKGROUND_PRESETS.map((hex) => (
+            <button
+              key={hex}
+              type="button"
+              aria-label={`Background ${hex}`}
+              onClick={() => set("background", hex)}
+              style={{ backgroundColor: hex }}
+              className={`size-7 rounded-full border transition-transform ${
+                s.background === hex ? "border-foreground scale-110" : "border-border"
+              }`}
+            />
+          ))}
+          <input
+            type="color"
+            aria-label="Custom background color"
+            value={
+              (s.background ?? "transparent").startsWith("#") ? s.background! : "#000000"
+            }
+            onChange={(e) => set("background", e.target.value)}
+            className="ml-auto h-8 w-12 cursor-pointer rounded-md border border-border bg-background"
+          />
+        </div>
+      </Row>
+
+      <Row label="Accent">
+        <div className="flex items-center gap-2">
+          {ACCENT_PRESETS.map((hex) => (
+            <button
+              key={hex}
+              type="button"
+              aria-label={`Accent ${hex}`}
+              onClick={() => set("accent", hex)}
+              style={{ backgroundColor: hex }}
+              className={`size-7 rounded-full border transition-transform ${
+                s.accent === hex ? "border-foreground scale-110" : "border-transparent"
+              }`}
+            />
+          ))}
+          <input
+            type="color"
+            value={s.accent}
+            onChange={(e) => set("accent", e.target.value)}
+            className="ml-auto h-8 w-12 cursor-pointer rounded-md border border-border bg-background"
+          />
+        </div>
+      </Row>
+
+      <Row label="Font">
+        <select
+          className={inputCls}
+          value={s.font}
+          onChange={(e) => set("font", e.target.value as SnippetStyle["font"])}
+        >
+          <option value="sans">Sans</option>
+          <option value="serif">Serif</option>
+          <option value="mono">Mono</option>
+        </select>
+      </Row>
+
+      <NumberField label="Columns" value={s.columns} min={1} max={4} onChange={(v) => set("columns", v)} />
+      <NumberField
+        label="Corner radius"
+        value={s.radius}
+        min={0}
+        max={32}
+        suffix="px"
+        onChange={(v) => set("radius", v)}
+      />
+      <NumberField
+        label="Max width"
+        value={s.maxWidth}
+        min={560}
+        max={1280}
+        step={20}
+        suffix="px"
+        onChange={(v) => set("maxWidth", v)}
+      />
+      <NumberField
+        label="Vertical padding"
+        value={s.padding}
+        min={16}
+        max={120}
+        step={4}
+        suffix="px"
+        onChange={(v) => set("padding", v)}
+      />
+
+      <label className="flex items-center justify-between rounded-md border border-border px-3 py-2.5">
+        <span className="text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+          Show icons
+        </span>
+        <input
+          type="checkbox"
+          checked={s.showIcons}
+          onChange={(e) => set("showIcons", e.target.checked)}
+          className="size-4 accent-foreground"
+        />
+      </label>
+    </div>
+  );
 }

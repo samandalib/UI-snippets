@@ -1,74 +1,65 @@
-import { useEffect, useRef, useState } from 'react'
-import { renderSnippetDocument } from '@/lib/snippets'
-import type { Snippet } from '@/lib/snippets'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { renderSnippetDocument } from "@/lib/snippets/render";
+import type { Snippet } from "@/lib/snippets/types";
 
-interface SnippetPreviewProps {
-  snippet: Snippet
-  className?: string
-  title?: string
-  pageWidth?: number
-  pageHeight?: number
-}
-
+/**
+ * Renders the exported document at a real page width and scales it down to fit,
+ * so the preview matches what the downloaded HTML looks like in a browser.
+ */
 export function SnippetPreview({
   snippet,
-  className = '',
-  title,
+  className,
+  title = "Snippet preview",
   pageWidth = 1280,
   pageHeight = 760,
-}: SnippetPreviewProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(1)
-
-  const html = renderSnippetDocument(snippet, { transparentPage: true })
+}: {
+  snippet: Snippet;
+  className?: string;
+  title?: string;
+  pageWidth?: number;
+  pageHeight?: number;
+}) {
+  const doc = useMemo(() => renderSnippetDocument(snippet, { transparentPage: true }), [snippet]);
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
 
   useEffect(() => {
-    if (!containerRef.current) return
-
-    const observer = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const hostWidth = entry.contentRect.width
-        const newScale = Math.min(1, hostWidth / pageWidth)
-        setScale(newScale)
-      }
-    })
-
-    observer.observe(containerRef.current)
-    return () => observer.disconnect()
-  }, [pageWidth])
+    const host = hostRef.current;
+    if (!host) return;
+    const measure = () => setScale(Math.min(1, host.clientWidth / pageWidth));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [pageWidth]);
 
   return (
     <div
-      ref={containerRef}
-      className={`bg-gray-200 p-4 rounded-lg ${className}`}
+      ref={hostRef}
+      className={`min-w-0 ${className ?? "w-full"}`}
       style={{
-        height: `${pageHeight * scale}px`,
-        overflow: 'hidden',
+        height: pageHeight * scale,
+        overflow: "hidden",
+        backgroundColor: "hsl(var(--muted, 0 0% 50%) / 0.25)",
+        backgroundImage:
+          "linear-gradient(45deg, rgba(127,127,127,.18) 25%, transparent 25%, transparent 75%, rgba(127,127,127,.18) 75%), linear-gradient(45deg, rgba(127,127,127,.18) 25%, transparent 25%, transparent 75%, rgba(127,127,127,.18) 75%)",
+        backgroundSize: "16px 16px",
+        backgroundPosition: "0 0, 8px 8px",
       }}
     >
-      <div
+      <iframe
+        title={title}
+        srcDoc={doc}
+        sandbox="allow-same-origin"
         style={{
+          width: pageWidth,
+          height: pageHeight,
+          border: "0",
+          background: "transparent",
           transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          width: `${pageWidth}px`,
-          height: `${pageHeight}px`,
-          backgroundImage: 'linear-gradient(45deg, #888 25%, transparent 25%, transparent 75%, #888 75%, #888), linear-gradient(45deg, #888 25%, transparent 25%, transparent 75%, #888 75%, #888)',
-          backgroundSize: '20px 20px',
-          backgroundPosition: '0 0, 10px 10px',
-          backgroundColor: '#eee',
+          transformOrigin: "top left",
         }}
-      >
-        <iframe
-          srcDoc={html}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-            display: 'block',
-          }}
-          title={title}
-        />
-      </div>
+      />
     </div>
-  )
+  );
 }

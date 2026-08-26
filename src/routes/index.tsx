@@ -1,56 +1,89 @@
-import { useNavigate } from '@tanstack/react-router'
-import { createSnippet, saveSnippet, TEMPLATE_LABELS, TEMPLATE_BLURBS } from '@/lib/snippets'
-import type { TemplateId } from '@/lib/snippets'
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { FileText, Plus, SquareStack } from "lucide-react";
+import { saveSnippet } from "@/lib/snippets/store";
+import { createSnippet } from "@/lib/snippets/templates";
+import { TEMPLATE_BLURBS, TEMPLATE_LABELS } from "@/lib/snippets/types";
+import type { TemplateId } from "@/lib/snippets/types";
 
-export default function Home() {
-  const navigate = useNavigate()
-  const templates: TemplateId[] = ['feature-grid', 'feature-split', 'stat-row', 'code-demo']
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Snippet Studio — Embeddable Feature Showcases" },
+      {
+        name: "description",
+        content:
+          "Create, edit and store embeddable product feature showcase snippets, then copy self-contained HTML into any website.",
+      },
+      { property: "og:title", content: "Snippet Studio — Embeddable Feature Showcases" },
+      {
+        property: "og:description",
+        content: "Build product feature showcase blocks and copy them as self-contained HTML.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: Library,
+});
 
-  const handleCreateSnippet = async (template: TemplateId) => {
-    const snippet = createSnippet(template)
-    saveSnippet(snippet)
-    navigate({ to: `/snippets/$${snippet.id}` })
-  }
+function Library() {
+  const navigate = useNavigate();
+
+  const start = (template: TemplateId) => {
+    const snippet = createSnippet(template, `${TEMPLATE_LABELS[template]} snippet`);
+    saveSnippet(snippet);
+    navigate({ to: "/snippets/$id", params: { id: snippet.id } });
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Snippet Studio</h1>
-          <p className="text-lg text-gray-600">
-            Create embeddable product feature showcase blocks for your marketing sites
+    <main className="min-h-screen bg-background px-6 py-14">
+      <div className="mx-auto max-w-6xl">
+        <header className="max-w-2xl">
+          <p className="text-[0.65rem] uppercase tracking-[0.4em] text-muted-foreground">
+            Snippet Studio
           </p>
-        </div>
+          <h1 className="mt-4 text-3xl font-light tracking-tight text-foreground sm:text-4xl">
+            Embeddable product feature showcases
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Start from a template, edit the copy and styling, then copy a self-contained HTML block
+            into your marketing site.
+          </p>
+          <a
+            href="/snippet-studio-source.pdf"
+            download="snippet-studio-source.pdf"
+            className="mt-6 inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-xs text-foreground transition-colors hover:border-foreground/50"
+          >
+            <FileText className="size-4" /> Download codebase (.pdf)
+          </a>
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {templates.map(template => (
-            <button
-              key={template}
-              onClick={() => handleCreateSnippet(template)}
-              className="p-6 bg-white rounded-lg shadow hover:shadow-lg transition border border-gray-200 text-left"
-            >
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
-                {TEMPLATE_LABELS[template]}
-              </h2>
-              <p className="text-gray-600 mb-4">{TEMPLATE_BLURBS[template]}</p>
-              <span className="inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
-                Create
-              </span>
-            </button>
-          ))}
-        </div>
+        <section className="mt-14">
+          <h2 className="text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">
+            Start a new snippet
+          </h2>
+          <div className="mt-5 grid gap-5 sm:grid-cols-3">
+            {(Object.keys(TEMPLATE_LABELS) as TemplateId[]).map((template) => (
+              <button
+                key={template}
+                type="button"
+                onClick={() => start(template)}
+                className="group rounded-xl border border-border bg-card/40 p-5 text-left transition-colors hover:border-foreground/40"
+              >
+                <div className="flex items-start justify-between">
+                  <SquareStack className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+                  <Plus className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+                </div>
+                <h3 className="mt-6 text-sm text-foreground">{TEMPLATE_LABELS[template]}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                  {TEMPLATE_BLURBS[template]}
+                </p>
+              </button>
+            ))}
+          </div>
+        </section>
 
-        <div className="mt-12 p-6 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="font-bold text-gray-900 mb-2">Features</h3>
-          <ul className="space-y-1 text-sm text-gray-700">
-            <li>✓ Four professional layout templates</li>
-            <li>✓ Four built-in design system presets</li>
-            <li>✓ Real-time preview with live editing</li>
-            <li>✓ Export as HTML, copy embed code, or download</li>
-            <li>✓ Auto-save to browser storage</li>
-          </ul>
-        </div>
       </div>
-    </div>
-  )
+    </main>
+  );
 }

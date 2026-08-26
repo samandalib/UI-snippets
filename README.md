@@ -1,74 +1,29 @@
-# UI Snippets
+# Welcome to your Lovable project
 
-A collection of UI component snippets and design system documentation featuring multiple design styles:
+This project was built with [Lovable](https://lovable.dev).
 
-- **JetBrains Style** - Based on JetBrains IDE design system with dense, functional spacing
-- **Liquid Glass** - Apple's WWDC 2025 material design with frosted glass effects
-- **Vercel Style** - Clean, modern component design
+## Build with Lovable
 
-## Getting Started
+Open your project in the [Lovable editor](https://lovable.dev) and keep building.
 
-### Prerequisites
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
+- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
 
-- Node.js 18+
-- Bun (recommended) or npm
+## Development
 
-### Installation
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
-```bash
-bun install
-# or
-npm install
-```
-
-### Development
-
-```bash
-bun dev
-# or
+```sh
+git clone <this-repository-url>
+cd <repository-name>
+npm i
 npm run dev
 ```
 
-### Build
+## Built with
 
-```bash
-bun run build
-# or
-npm run build
-```
-
-## Project Structure
-
-```
-├── docs/
-│   └── styles/
-│       ├── jetbrains.md      # JetBrains design system
-│       ├── liquid-glass.md   # Liquid Glass material design
-│       ├── vercel.md         # Vercel design system
-│       └── APP_SPEC.md       # Application specifications
-├── src/                      # Source code
-├── public/                   # Static assets
-└── scripts/                  # Build and utility scripts
-```
-
-## Design Systems
-
-### JetBrains Style
-
-The JetBrains style follows the design language of JetBrains IDEs (IntelliJ, PyCharm, WebStorm). Features include:
-- Graphite color palette (dark grays)
-- 4px/6px/8px border radius
-- Dense spacing optimized for productivity
-- Semantic color usage (only for code and status)
-
-### Liquid Glass
-
-Apple's Liquid Glass is a material design system featuring:
-- Glass layers with backdrop blur
-- Refracted content underneath
-- Rounded edges and soft shadows
-- Colorful, gradient backdrops
-
-## License
-
-MIT
+- TanStack Start
+- TypeScript
+- React
+- Tailwind CSS
