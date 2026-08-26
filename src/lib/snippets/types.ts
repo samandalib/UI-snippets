@@ -35,6 +35,9 @@ export interface Snippet {
   items: SnippetItem[]
   style: SnippetStyle
   hidden?: Set<HidableKey>
+  code?: string
+  menuItems?: string[]
+  toggleLabel?: string
   createdAt: number
   updatedAt: number
 }

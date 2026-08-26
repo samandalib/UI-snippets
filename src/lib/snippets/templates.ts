@@ -100,6 +100,9 @@ export function createSnippet(template: TemplateId, name?: string): Snippet {
           icon: 'shield',
         },
       ],
+      code: 'const result = await generateText({\n  model: model("gpt-4"),\n  prompt: "Hello world",\n});',
+      menuItems: ['GPT-4', 'Claude 3', 'Gemini'],
+      toggleLabel: 'Streaming',
     },
   }
 
@@ -116,6 +119,9 @@ export function createSnippet(template: TemplateId, name?: string): Snippet {
     ctaHref: snippet.ctaHref || '#',
     items: snippet.items || [newItem()],
     style: BASE_STYLE,
+    code: snippet.code,
+    menuItems: snippet.menuItems,
+    toggleLabel: snippet.toggleLabel,
     createdAt: now,
     updatedAt: now,
   }
