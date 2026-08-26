@@ -1,0 +1,11 @@
+[install]
+optional = false
+
+[run]
+silent = false
+
+[test]
+preload = []
+root = "."
+
+[packages]
