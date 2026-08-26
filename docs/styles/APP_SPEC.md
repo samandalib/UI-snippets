@@ -205,5 +205,19 @@ Shared bits: `Row` (uppercase tracked label), `inputCls`, `TextField` (with `mul
 
 - **Visible parts:** chip list of `HidableKey` (template-aware – "code", "menu", "toggle" only for code-demo) with `Eye` / `EyeOff` icons toggling `snippet.hidden`.
 - **Name, eyebrow, heading, subheading, CTA label, CTA href.**
-- **Code-demo only:** textareas, picker-row textures (one per line), toggle-label field.
+- **Code-demo only:** code textareas, picker-row textures (one per line), toggle-label field.
 - **Items list:** per item title, body (or value/caption wording for 'stat-row'), icon picker over `ICON_KEYS`, reorder handle, delete; plus "Add item" via `newItem()`.
+
+### **StyleEditor**
+
+- **Style preset row first:** one button per `STYLE_PRESETS` entry showing three swatch dots, label, blurb, and a `Check` when the current style matches. Clicking one applies the preset's whole `SnippetStyle`.
+- **A note when a non-Studio preset is active:** the preset owns typography, surfaces, borders and syntax colors; accent, columns, width and padding still apply.
+- **Color scheme** (Dark / Light), **Background** (Transparent + switches + native color input), **Accent** (`ACCENT_PRESETS` + color input), **Font select**, and **sliders** for columns, corner radius, max width, vertical padding, plus a **Show-icons checkbox**.
+
+## 11. Conventions to preserve
+
+- **Icons in app chrome** come from 'lucide-react'; never emoji or unicode glyphs.
+- **No hardcoded Tailwind color utilities in app UI** – use semantic tokens from `src/styles.css`.
+- **Exported CSS is generated as a string;** keep it deterministic and free of breakpoints so the fidelity and proportions invariants hold.
+- **Each route defines its own `head()` metadata.**
+- **When adding a template:** extend `TemplateId`, the label/blurb maps, a `createSnippet` branch, a `body()` branch, base CSS, and any per-preset override blocks so the new parts need = in that order.
