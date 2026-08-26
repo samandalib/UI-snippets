@@ -25,19 +25,64 @@ Alternatives: a photo, a mesh gradient, or the host page's own artwork. Avoid pu
 
 ## Material tokens
 
-**Glass backdrop blur** (backdrop-filter: blur(…))
-- Default: 12-16px `ease-out` (opacity + 4px rise). No springs, no parallax, no scale-in on cards.
-- **Popup / picker list:** header row with numbered or muted hint text, grouped rows split by 1px `border`, the selected row a full-bleed `accent` fill with white text and a white check.
-- **Buttons:** primary = `accent` fill, white text, 4px radius, 500 weight; secondary = transparent fill with 1px `border` and `fg` text.
-- **Toggle:** 34x20 track, accent when on, `surface-2` when off, white 16px knob.
-- **Status bar:** 11px `fg-muted` text on `surface-1`, breadcrumb chevrons, right side shows metadata chips (`LF`, `UTF-8`, indent) with no borders.
+| Token | Dark over color | Light over color |
+| --- | --- | --- |
+| Glass fill | `rgba(255,255,255,0.10)` | `rgba(255,255,255,0.50)` |
+| Glass fill (raised / selected) | `rgba(255,255,255,0.18)` | `rgba(255,255,255,0.72)` |
+| Popover / menu fill | `rgba(28,28,32,0.42)` | `rgba(255,255,255,0.60)` |
+| Edge hairline | `rgba(255,255,255,0.28)` | `rgba(255,255,255,0.70)` |
+| Text | `#ffffff` | `#101214` |
+| Secondary text | 72% text | 66% text |
+| Tertiary text | 50% text | 45% text |
+| Accent (system blue) | `#0a84ff` | `#007aff` |
 
-## 9. JetBrainsizing checklist
+Blur recipe – one standard declaration only, never hand-write `-webkit-`:
 
-1. Recolor the canvas to `#1E1F22` and lift chrome bands to `#2B2D30`.
-2. Swap type to JetBrains Sans / JetBrains Mono, tracking 0.
-3. Shrink radii to 4/6/8 and remove every pill except badges.
-4. Reduce all borders to 1px `#393B40`; delete shadows except popups.
-5. Pick exactly one selected row/tab indicator with white text on `#3574F0`.
-6. Recolor code with the syntax palette above; italic comments; muted flush line numbers.
-7. Tighten padding to IDE density and re-check that only the accent and status glyphs are saturated.
+```css
+backdrop-filter: blur(28px) saturate(180%);
+```
+
+Blur radius by element size: chips/icons 18px, cards/panels 28px, popovers and sheets 34px.
+
+Specular edge (what sells the material):
+
+```css
+box-shadow:
+  inset 0 1px 0 rgba(255,255,255,.45), /* top light catch */
+  inset 0 -1px 0 rgba(255,255,255,.14), /* bottom bounce */
+  0 18px 40px -22px rgba(0,0,0,.55); /* lift off the canvas */
+```
+
+## Typography
+
+- Family: `-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Inter, sans-serif`. Mono: `'SF Mono', ui-monospace, Menlo`.
+- Tracking: `-0.025em` on large display text.
+- Weights: 400 body, 510–590 labels/controls, 640 display headings. SF does not need bold to feel confident.
+- Scale: eyebrow 11px / .14em uppercase, body 17px, item title 16px, section heading 42px, stat value 34–45px.
+
+## Shape
+
+- Radii: capsule (`999px`) for every control – buttons, tabs, chips, menu rows, toggles, icon wells. Containers 22–28px.
+- Borders: exactly 1px, always a light hairline (never a dark stroke).
+- Padding: 24–26px in cards, 12px x 22px in buttons, 8px gutter inside tab bars and menu lists so the capsule selection has room to breathe.
+- Icons: 44px circular glass well with the glyph in solid text color.
+
+## Components
+
+- **Button** – capsule glass, hairline edge, top inset highlight, solid label.
+  Primary can raise the fill to the 'raised' token rather than turning solid color.
+
+- **Segmented tabs** – glass container with 8px inner padding; the active tab is a capsule of the raised fill with an inset top highlight. No underlines.
+
+- **Popover / picker** – heavier blur (34px), 22px radius, darker fill in dark mode, list rows as capsules; the selected row uses the raised fill, not a solid accent bar.
+
+- **Code panel** – glass container, transparent code area (let the backdrop show through), 1.75 line-height, SF Mono. Syntax palette:
+  keyword `#ff9f0a`, string `#7ce38b`, number `#ffd68a`, function `#64d2ff`, comment 50% white, upright (no italics).
+
+- **Toggle** – 34x20 track, accent when on, `surface-2` when off, white 16px knob.
+
+- **Status bar** – 11px `fg-muted` text on `surface-1`, breadcrumb chevrons, right side shows metadata chips (`LF`, `UTF-8`, indent) with no borders.
+
+## Motion
+
+Glass responds like a soft physical body: `cubic-bezier(.32,.72,0,1)` over 250–350ms; hover lifts with `transform: scale(1.03)` and a brighter fill. Never animate blur radius, and never fade the material's opacity in and out.
