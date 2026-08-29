@@ -1,5 +1,8 @@
+import { playgroundStyles, renderPlayground } from "./code-playground";
 import { iconSvg } from "./icons";
-import type { Snippet } from "./types";
+import { problemsHubStyles, renderProblemsHub } from "./problems-hub";
+import { REPOVIVE_LOGO_SRC } from "./repovive-logo";
+import type { LeaderboardEntry, ProblemCell, Snippet } from "./types";
 
 function esc(value: string): string {
  return value
@@ -424,7 +427,245 @@ ${
 `
    : ""
 }
+${
+  snippet.template === "contest-ranking"
+    ? `
+.fs-root{min-height:100vh}
+.fs-frame,.fs-zoom{width:100%;max-width:none;padding:0;margin:0}
+${leaderboardStyles(snippet, c, radius)}`
+    : snippet.template === "problems-hub"
+      ? `
+.fs-root{min-height:100vh}
+.fs-frame,.fs-zoom{width:100%;max-width:none;padding:0;margin:0}
+${problemsHubStyles(snippet, radius)}`
+      : snippet.template === "code-playground"
+        ? `
+.fs-root{min-height:100vh}
+.fs-frame,.fs-zoom{width:100%;max-width:none;padding:0;margin:0}
+${playgroundStyles(snippet, radius, c.monoFamily, c.syntax)}`
+        : ""
+}
 `.trim();
+}
+
+function leaderboardSemantics(s: Snippet["style"]): { success: string; danger: string } {
+  const preset = s.preset ?? "studio";
+  const dark = s.scheme === "dark";
+  if (preset === "vercel") {
+    return dark ? { success: "#00c07f", danger: "#ff4d4f" } : { success: "#0f8a5f", danger: "#d93036" };
+  }
+  if (preset === "jetbrains") {
+    return dark ? { success: "#5FB865", danger: "#DB5C5C" } : { success: "#208A3C", danger: "#C4342F" };
+  }
+  if (preset === "liquidglass") {
+    return dark ? { success: "#7ce38b", danger: "#ff6961" } : { success: "#1c7c3c", danger: "#c4342f" };
+  }
+  return dark ? { success: "#4ade80", danger: "#ef4444" } : { success: "#15803d", danger: "#dc2626" };
+}
+
+function leaderboardStyles(
+  snippet: Snippet,
+  c: Theme,
+  radius: number,
+): string {
+  const s = snippet.style;
+  const preset = s.preset ?? "studio";
+  const sem = leaderboardSemantics(s);
+  const isVercel = preset === "vercel";
+  const isJb = preset === "jetbrains";
+  const isLg = preset === "liquidglass";
+  const controlRadius = isJb ? "4px" : isLg ? "999px" : isVercel ? "8px" : `${Math.max(6, Math.round(radius * 0.55))}px`;
+  const panelRadius = isJb ? "6px" : isLg ? `${Math.max(22, radius)}px` : isVercel ? "12px" : `${radius}px`;
+
+  const base = `
+.fs-lb{
+ --fs-lb-success:${sem.success};--fs-lb-danger:${sem.danger};
+ --fs-lb-panel-r:${panelRadius};--fs-lb-control-r:${controlRadius};
+ display:flex;min-height:100vh;background:var(--fs-bg);color:var(--fs-text);
+ font-family:${c.fontFamily};letter-spacing:${c.tracking};font-size:13px}
+.fs-lb-side{width:52px;flex:0 0 52px;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:20px;
+ border-right:1px solid var(--fs-border);background:var(--fs-surface)}
+.fs-lb-logo{width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;background:transparent;border:0;padding:0}
+.fs-lb-logo img{width:100%;height:100%;object-fit:contain;display:block}
+.fs-lb-nav{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:8px}
+.fs-lb-nav-btn{width:36px;height:36px;border-radius:var(--fs-lb-control-r);display:flex;align-items:center;justify-content:center;
+ color:var(--fs-subtle);border:0;background:transparent}
+.fs-lb-nav-btn.is-active{background:var(--fs-raised);color:var(--fs-text)}
+.fs-lb-main{flex:1;min-width:0;padding:20px 24px 32px;background:var(--fs-bg)}
+.fs-lb-crumb{display:flex;align-items:center;gap:8px;color:var(--fs-muted);font-size:13px;margin-bottom:20px}
+.fs-lb-crumb span{color:var(--fs-subtle)}
+.fs-lb-crumb strong{color:var(--fs-text);font-weight:500}
+.fs-lb-card{background:var(--fs-surface);border:1px solid var(--fs-border);border-radius:var(--fs-lb-panel-r);overflow:hidden}
+.fs-lb-tabs{display:flex;border-bottom:1px solid var(--fs-border);padding:0 8px;background:var(--fs-surface)}
+.fs-lb-tab{padding:14px 16px;font-size:13px;color:var(--fs-muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:default}
+.fs-lb-tab.is-active{color:var(--fs-text);font-weight:500}
+.fs-lb-table-wrap{overflow-x:auto;background:var(--fs-bg)}
+.fs-lb-table{width:100%;border-collapse:collapse;table-layout:fixed;border-spacing:0}
+.fs-lb-table thead th,.fs-lb-table tbody td{padding:0 12px;text-align:center;vertical-align:middle}
+.fs-lb-table thead th{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--fs-muted);
+ padding-top:14px;padding-bottom:14px;background:var(--fs-surface);border-bottom:1px solid var(--fs-border)}
+.fs-lb-table tbody tr{border-bottom:1px solid var(--fs-border)}
+.fs-lb-table tbody td{border:0;height:44px}
+.fs-lb-table th.fs-lb-th-participant,.fs-lb-table td.fs-lb-participant{text-align:left}
+.fs-lb-table th.fs-lb-th-score,.fs-lb-table td.fs-lb-score{text-align:left}
+.fs-lb-th-prob{font-size:11px;line-height:1.3}
+.fs-lb-th-prob small{display:block;font-size:10px;color:var(--fs-subtle);font-weight:400;margin-top:2px}
+.fs-lb-rank{color:var(--fs-subtle);font-variant-numeric:tabular-nums}
+.fs-lb-participant{text-align:left}
+.fs-lb-participant-inner{display:inline-flex;align-items:center;gap:8px;max-width:100%;vertical-align:middle}
+.fs-lb-handle{font-weight:500;white-space:nowrap;line-height:1.2;color:var(--fs-text)}
+.fs-lb-flag{font-size:14px;line-height:1;flex:0 0 auto}
+.fs-lb-score{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--fs-text);line-height:1.2}
+.fs-lb-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;height:44px;line-height:1.2;box-sizing:border-box;font-variant-numeric:tabular-nums}
+.fs-lb-cell.is-left{align-items:flex-start}
+.fs-lb-solved{color:var(--fs-lb-success);font-weight:500;font-size:13px;line-height:1.2;min-height:16px}
+.fs-lb-time{color:var(--fs-subtle);font-size:11px;line-height:1.2;min-height:14px}
+.fs-lb-penalty{color:var(--fs-lb-danger);font-size:11px;margin-right:4px}
+.fs-lb-failed{color:var(--fs-lb-danger);font-weight:500;line-height:1.2}
+.fs-lb-empty{color:var(--fs-subtle);line-height:1.2}
+.fs-lb-delta{font-variant-numeric:tabular-nums;font-weight:500;line-height:1.2}
+.fs-lb-delta.pos{color:var(--fs-lb-success)}
+.fs-lb-delta.neg{color:var(--fs-lb-danger)}`;
+
+  if (isVercel) {
+    return `${base}
+.fs-lb-tab.is-active{border-bottom-color:var(--fs-text)}
+.fs-lb-nav-btn.is-active{background:var(--fs-raised)}`.trim();
+  }
+
+  if (isJb) {
+    return `${base}
+.fs-lb-tabs{padding:0}
+.fs-lb-tab{border-bottom:0;border-top:2px solid transparent;padding:9px 16px}
+.fs-lb-tab.is-active{background:var(--fs-raised);border-top-color:var(--fs-accent);color:var(--fs-text)}
+.fs-lb-nav-btn.is-active{background:var(--fs-accent);color:#fff}
+.fs-lb-table th{letter-spacing:.14em}`.trim();
+  }
+
+  if (isLg) {
+    return `${base}
+.fs-lb-card,.fs-lb-side{
+ background:var(--fs-surface);backdrop-filter:blur(28px) saturate(180%);
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(255,255,255,.14),0 18px 40px -22px rgba(0,0,0,.55)}
+.fs-lb-tabs{border-bottom:1px solid var(--fs-border);padding:8px;gap:6px;background:transparent}
+.fs-lb-tab{border-bottom:0;padding:9px 18px;border-radius:999px;flex:0 0 auto}
+.fs-lb-tab.is-active{background:var(--fs-raised);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.fs-lb-nav-btn.is-active{background:var(--fs-raised);box-shadow:inset 0 1px 0 rgba(255,255,255,.45)}
+.fs-lb-table-wrap{background:transparent}
+.fs-lb-table th{background:transparent}`.trim();
+  }
+
+  return `${base}
+.fs-lb-tab.is-active{border-bottom-color:var(--fs-accent)}
+.fs-lb-nav-btn.is-active{background:color-mix(in srgb,var(--fs-accent) 14%,transparent);color:var(--fs-accent)}`.trim();
+}
+
+function renderProblemCell(cell: ProblemCell): string {
+  if (cell.kind === "empty") {
+    return `<div class="fs-lb-cell"><div class="fs-lb-solved fs-lb-empty">—</div><div class="fs-lb-time">&nbsp;</div></div>`;
+  }
+  if (cell.kind === "failed") {
+    return `<div class="fs-lb-cell"><div class="fs-lb-solved fs-lb-failed">-${cell.attempts}</div><div class="fs-lb-time">&nbsp;</div></div>`;
+  }
+  const penalty = cell.penalty
+    ? `<span class="fs-lb-penalty">+${cell.penalty}</span>`
+    : "";
+  return `<div class="fs-lb-cell">
+    <div class="fs-lb-solved">${penalty}${cell.points}</div>
+    <div class="fs-lb-time">${esc(cell.time)}</div>
+  </div>`;
+}
+
+function renderLeaderboardRow(entry: LeaderboardEntry): string {
+  const deltaCls = entry.delta >= 0 ? "pos" : "neg";
+  const deltaText = entry.delta >= 0 ? `+${entry.delta}` : `${entry.delta}`;
+  return `<tr>
+    <td class="fs-lb-rank"><div class="fs-lb-cell">${entry.rank}</div></td>
+    <td class="fs-lb-participant">
+      <div class="fs-lb-cell is-left">
+        <span class="fs-lb-participant-inner">
+          <span class="fs-lb-flag">${entry.flag}</span>
+          <span class="fs-lb-handle">${esc(entry.handle)}</span>
+        </span>
+      </div>
+    </td>
+    <td class="fs-lb-score"><div class="fs-lb-cell is-left"><span class="fs-lb-score">${entry.score}</span></div></td>
+    ${entry.cells.map((cell) => `<td>${renderProblemCell(cell)}</td>`).join("")}
+    <td><div class="fs-lb-cell"><span class="fs-lb-delta ${deltaCls}">${deltaText}</span></div></td>
+  </tr>`;
+}
+
+function contestRanking(snippet: Snippet): string {
+  const problems = snippet.contestProblems ?? [];
+  const entries = snippet.leaderboardEntries ?? [];
+  const crumbs = snippet.breadcrumbs ?? ["Contests", "Premier Round 7", "Ranking"];
+  const tabs = visible(snippet, "items") ? snippet.items : [];
+  const breadcrumbHtml = crumbs
+    .map((part, i) =>
+      i === crumbs.length - 1
+        ? `<strong>${esc(part)}</strong>`
+        : `${esc(part)}<span>›</span>`,
+    )
+    .join("");
+
+  const ICON_CMD =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>';
+  const ICON_TROPHY =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
+  const ICON_CLOCK =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>';
+  const ICON_CHAT =
+    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+
+  return `<div class="fs-lb">
+    <aside class="fs-lb-side">
+      <div class="fs-lb-logo"><img src="${REPOVIVE_LOGO_SRC}" width="28" height="28" alt="Repovive"></div>
+      <nav class="fs-lb-nav">
+        <button type="button" class="fs-lb-nav-btn">${ICON_CMD}</button>
+        <button type="button" class="fs-lb-nav-btn is-active">${ICON_TROPHY}</button>
+        <button type="button" class="fs-lb-nav-btn">${ICON_CLOCK}</button>
+        <button type="button" class="fs-lb-nav-btn">${ICON_CHAT}</button>
+      </nav>
+    </aside>
+    <div class="fs-lb-main">
+      <nav class="fs-lb-crumb">${breadcrumbHtml}</nav>
+      <div class="fs-lb-card">
+        ${
+          tabs.length
+            ? `<div class="fs-lb-tabs">
+          ${tabs
+            .map(
+              (tab, i) =>
+                `<div class="fs-lb-tab${i === 0 ? " is-active" : ""}">${esc(tab.title)}</div>`,
+            )
+            .join("")}
+        </div>`
+            : ""
+        }
+        <div class="fs-lb-table-wrap">
+          <table class="fs-lb-table">
+            <thead>
+              <tr>
+                <th style="width:36px">#</th>
+                <th class="fs-lb-th-participant" style="width:160px">Participant</th>
+                <th class="fs-lb-th-score" style="width:72px">Score</th>
+                ${problems
+                  .map(
+                    (p) =>
+                      `<th class="fs-lb-th-prob" style="width:64px">${esc(p.letter)}<small>${p.points}</small></th>`,
+                  )
+                  .join("")}
+                <th style="width:64px">Δ Delta</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${entries.map(renderLeaderboardRow).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>`;
 }
 
 
@@ -568,6 +809,9 @@ function codeDemo(snippet: Snippet): string {
 
 
 function body(snippet: Snippet): string {
+ if (snippet.template === "code-playground") return renderPlayground(snippet);
+ if (snippet.template === "problems-hub") return renderProblemsHub(snippet);
+ if (snippet.template === "contest-ranking") return contestRanking(snippet);
  if (snippet.template === "code-demo") return codeDemo(snippet);
  const showItems = visible(snippet, "items");
 

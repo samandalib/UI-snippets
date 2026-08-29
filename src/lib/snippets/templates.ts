@@ -1,8 +1,115 @@
-import type { Snippet, SnippetItem, TemplateId } from "./types";
+import { BINARY_EXP_LANGUAGES } from "./binary-exp";
+import type { ContestProblem, LeaderboardEntry, Snippet, SnippetItem, TemplateId } from "./types";
 
 function uid(): string {
   return Math.random().toString(36).slice(2, 10);
 }
+
+function leaderboardEntry(
+  rank: number,
+  handle: string,
+  color: string,
+  flag: string,
+  score: number,
+  cells: LeaderboardEntry["cells"],
+  delta: number,
+): LeaderboardEntry {
+  return { id: uid(), rank, handle, color, flag, score, cells, delta };
+}
+
+const CONTEST_PROBLEMS: ContestProblem[] = [
+  { letter: "A", points: 500 },
+  { letter: "B", points: 1000 },
+  { letter: "C", points: 1500 },
+  { letter: "D", points: 2000 },
+  { letter: "E", points: 2500 },
+  { letter: "F", points: 3000 },
+  { letter: "G", points: 3500 },
+];
+
+const PREMIER_ROUND_7_ENTRIES: LeaderboardEntry[] = [
+  leaderboardEntry(1, "jiangly", "#22d3ee", "🇨🇳", 8495, [
+    { kind: "solved", points: 495, time: "3m" },
+    { kind: "solved", points: 988, time: "7m" },
+    { kind: "solved", points: 1455, time: "25m" },
+    { kind: "solved", points: 1995, time: "49m" },
+    { kind: "solved", points: 2495, time: "74m" },
+    { kind: "solved", points: 2988, time: "99m" },
+    { kind: "solved", points: 3479, time: "124m" },
+  ], 422),
+  leaderboardEntry(2, "ksun48", "#f87171", "🇺🇸", 7923, [
+    { kind: "solved", points: 495, time: "4m" },
+    { kind: "solved", points: 988, time: "11m" },
+    { kind: "solved", points: 1455, time: "28m" },
+    { kind: "solved", points: 1995, time: "52m" },
+    { kind: "solved", points: 2495, time: "81m" },
+    { kind: "solved", points: 2988, time: "105m" },
+    { kind: "empty" },
+  ], 388),
+  leaderboardEntry(3, "Benq", "#fb923c", "🇹🇼", 7401, [
+    { kind: "solved", points: 495, time: "5m" },
+    { kind: "solved", points: 988, time: "14m", penalty: 2 },
+    { kind: "solved", points: 1455, time: "31m" },
+    { kind: "solved", points: 1995, time: "58m" },
+    { kind: "solved", points: 2495, time: "88m" },
+    { kind: "empty" },
+    { kind: "empty" },
+  ], 351),
+  leaderboardEntry(4, "ecnerwala", "#f87171", "🇺🇸", 6892, [
+    { kind: "solved", points: 495, time: "6m" },
+    { kind: "solved", points: 988, time: "16m" },
+    { kind: "solved", points: 1455, time: "35m" },
+    { kind: "solved", points: 1995, time: "63m" },
+    { kind: "solved", points: 2495, time: "95m" },
+    { kind: "empty" },
+    { kind: "empty" },
+  ], 312),
+  leaderboardEntry(5, "Um_nik", "#ef4444", "🇷🇺", 6388, [
+    { kind: "solved", points: 495, time: "8m" },
+    { kind: "solved", points: 988, time: "19m" },
+    { kind: "solved", points: 1455, time: "40m" },
+    { kind: "solved", points: 1995, time: "70m" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "empty" },
+  ], 278),
+  leaderboardEntry(6, "maroon_kuri", "#f87171", "🇯🇵", 5888, [
+    { kind: "solved", points: 495, time: "9m" },
+    { kind: "solved", points: 988, time: "22m" },
+    { kind: "solved", points: 1455, time: "44m" },
+    { kind: "solved", points: 1995, time: "78m" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "empty" },
+  ], 241),
+  leaderboardEntry(7, "neal", "#fb923c", "🇺🇸", 5388, [
+    { kind: "solved", points: 495, time: "10m" },
+    { kind: "solved", points: 988, time: "25m" },
+    { kind: "solved", points: 1455, time: "48m" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "empty" },
+  ], 205),
+  leaderboardEntry(8, "yosupo", "#ef4444", "🇯🇵", 4888, [
+    { kind: "solved", points: 495, time: "12m" },
+    { kind: "solved", points: 988, time: "29m" },
+    { kind: "solved", points: 1455, time: "55m" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "failed", attempts: 3 },
+  ], 168),
+  leaderboardEntry(9, "Petr", "#f87171", "🇷🇺", 4388, [
+    { kind: "solved", points: 495, time: "15m" },
+    { kind: "solved", points: 988, time: "33m" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "empty" },
+    { kind: "empty" },
+  ], -7),
+];
 
 function items(list: Array<Omit<SnippetItem, "id">>): SnippetItem[] {
   return list.map((item) => ({ ...item, id: uid() }));
@@ -97,6 +204,96 @@ console.log(text);`,
         { title: "Global edge delivery", body: "Served from 260 locations worldwide.", icon: "globe" },
       ]),
       style: { ...BASE_STYLE, columns: 2, accent: "#fbbf24" },
+    };
+  }
+
+  if (template === "contest-ranking") {
+    return {
+      ...base,
+      name: name || "Premier Round 7 Ranking",
+      eyebrow: "",
+      heading: "",
+      subheading: "",
+      ctaLabel: "",
+      breadcrumbs: ["Contests", "Premier Round 7", "Ranking"],
+      items: items([
+        { title: "Global", body: "", icon: "globe" },
+        { title: "My Country", body: "", icon: "shield" },
+        { title: "Following", body: "", icon: "sparkles" },
+        { title: "Virtual", body: "", icon: "layers" },
+      ]),
+      contestProblems: CONTEST_PROBLEMS,
+      leaderboardEntries: PREMIER_ROUND_7_ENTRIES,
+      hidden: { eyebrow: true, heading: true, subheading: true, cta: true },
+      style: {
+        ...BASE_STYLE,
+        preset: "vercel",
+        scheme: "dark",
+        background: "#0a0a0a",
+        accent: "#ffffff",
+        radius: 12,
+        maxWidth: 1100,
+        showIcons: false,
+        padding: 0,
+      },
+    };
+  }
+
+  if (template === "problems-hub") {
+    return {
+      ...base,
+      name: name || "Problems hub",
+      eyebrow: "",
+      heading: "",
+      subheading: "",
+      ctaLabel: "",
+      items: items([
+        { title: "Rounds", body: "", icon: "zap" },
+        { title: "Classics", body: "", icon: "layers" },
+        { title: "FAANG", body: "", icon: "globe" },
+        { title: "Quant", body: "", icon: "gauge" },
+        { title: "Status", body: "", icon: "sparkles" },
+      ]),
+      hidden: { eyebrow: true, heading: true, subheading: true, cta: true },
+      style: {
+        ...BASE_STYLE,
+        preset: "vercel",
+        scheme: "dark",
+        background: "#000000",
+        accent: "#0072f5",
+        radius: 12,
+        maxWidth: 1200,
+        showIcons: false,
+        padding: 0,
+      },
+    };
+  }
+
+  if (template === "code-playground") {
+    return {
+      ...base,
+      name: name || "Code playground",
+      eyebrow: "",
+      heading: "",
+      subheading: "",
+      ctaLabel: "Run",
+      code: BINARY_EXP_LANGUAGES.find((l) => l.id === "python")?.code ?? "",
+      menuItems: BINARY_EXP_LANGUAGES.map((l) => l.label),
+      toggleLabel: "stdin/stdout",
+      items: [],
+      hidden: { eyebrow: true, heading: true, subheading: true, cta: true },
+      style: {
+        ...BASE_STYLE,
+        preset: "vercel",
+        scheme: "dark",
+        background: "#000000",
+        accent: "#0072f5",
+        radius: 12,
+        maxWidth: 1200,
+        showIcons: false,
+        padding: 0,
+        font: "mono",
+      },
     };
   }
 

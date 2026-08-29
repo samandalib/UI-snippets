@@ -1,4 +1,32 @@
-export type TemplateId = "feature-grid" | "feature-split" | "stat-row" | "code-demo";
+export type TemplateId =
+  | "feature-grid"
+  | "feature-split"
+  | "stat-row"
+  | "code-demo"
+  | "contest-ranking"
+  | "problems-hub"
+  | "code-playground";
+
+export type ProblemCell =
+  | { kind: "solved"; points: number; time: string; penalty?: number }
+  | { kind: "failed"; attempts: number }
+  | { kind: "empty" };
+
+export type LeaderboardEntry = {
+  id: string;
+  rank: number;
+  handle: string;
+  color: string;
+  flag: string;
+  score: number;
+  cells: ProblemCell[];
+  delta: number;
+};
+
+export type ContestProblem = {
+  letter: string;
+  points: number;
+};
 
 export type IconKey =
   | "zap"
@@ -52,6 +80,12 @@ export type Snippet = {
   menuItems?: string[];
   /** code-demo only: label beside the toggle switch. */
   toggleLabel?: string;
+  /** contest-ranking only: breadcrumb trail segments. */
+  breadcrumbs?: string[];
+  /** contest-ranking only: problem column headers (A–G). */
+  contestProblems?: ContestProblem[];
+  /** contest-ranking only: table rows. */
+  leaderboardEntries?: LeaderboardEntry[];
   /** Parts that can be hidden without deleting their content. Undefined = visible. */
   hidden?: Partial<Record<HidableKey, boolean>>;
   style: SnippetStyle;
@@ -64,6 +98,9 @@ export const TEMPLATE_LABELS: Record<TemplateId, string> = {
   "feature-split": "Split showcase",
   "stat-row": "Stat row",
   "code-demo": "Code demo",
+  "contest-ranking": "Contest ranking",
+  "problems-hub": "Problems hub",
+  "code-playground": "Code playground",
 };
 
 export const TEMPLATE_BLURBS: Record<TemplateId, string> = {
@@ -71,6 +108,9 @@ export const TEMPLATE_BLURBS: Record<TemplateId, string> = {
   "feature-split": "Headline and call to action beside a stacked feature list.",
   "stat-row": "Oversized metrics with captions in a single horizontal band.",
   "code-demo": "Tabbed code panel with a floating picker list and a toggle.",
+  "contest-ranking": "Competitive programming leaderboard with sidebar, tabs and score grid.",
+  "problems-hub": "Interactive problem browser with five tabs, filters and status.",
+  "code-playground": "Editor with language picker, stdin/stdout panes, and a Run action.",
 };
 
 export const ICON_KEYS: IconKey[] = [

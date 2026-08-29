@@ -63,6 +63,40 @@ export function duplicateSnippet(id: string): Snippet | undefined {
   return copy;
 }
 
+/** Creates the Premier Round 7 ranking snippet once, or returns the existing copy. */
+export function ensurePremierRound7Snippet(): Snippet {
+  const list = read();
+  const existing = list.find(
+    (s) => s.template === "contest-ranking" && s.name === "Premier Round 7 Ranking",
+  );
+  if (existing) return existing;
+  const snippet = createSnippet("contest-ranking", "Premier Round 7 Ranking");
+  write([snippet, ...list]);
+  return snippet;
+}
+
+export function ensureProblemsHubSnippet(): Snippet {
+  const list = read();
+  const existing = list.find(
+    (s) => s.template === "problems-hub" && s.name === "Problems hub",
+  );
+  if (existing) return existing;
+  const snippet = createSnippet("problems-hub", "Problems hub");
+  write([snippet, ...list]);
+  return snippet;
+}
+
+export function ensurePlaygroundSnippet(): Snippet {
+  const list = read();
+  const existing = list.find(
+    (s) => s.template === "code-playground" && s.name === "Code playground",
+  );
+  if (existing) return existing;
+  const snippet = createSnippet("code-playground", "Code playground");
+  write([snippet, ...list]);
+  return snippet;
+}
+
 export function subscribe(fn: () => void): () => void {
   if (!isBrowser()) return () => {};
   window.addEventListener("snippets:changed", fn);

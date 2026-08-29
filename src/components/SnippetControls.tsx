@@ -108,8 +108,16 @@ export function ContentEditor({
   const patch = (part: Partial<Snippet>) => onChange({ ...snippet, ...part });
   const isStats = snippet.template === "stat-row";
   const isCode = snippet.template === "code-demo";
+  const isPlayground = snippet.template === "code-playground";
+  const isRanking = snippet.template === "contest-ranking";
+  const isHub = snippet.template === "problems-hub";
+  const isChrome = isRanking || isHub || isPlayground;
 
-  const hidableKeys: HidableKey[] = isCode
+  const hidableKeys: HidableKey[] = isPlayground
+    ? ["code", "toggle"]
+    : isChrome
+    ? ["items"]
+    : isCode
     ? ["eyebrow", "heading", "subheading", "items", "code", "menu", "toggle", "cta"]
     : ["eyebrow", "heading", "subheading", "items", "cta"];
   const toggleHidden = (key: HidableKey) =>
@@ -142,7 +150,9 @@ export function ContentEditor({
 
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField label="Eyebrow" value={snippet.eyebrow} onChange={(v) => patch({ eyebrow: v })} />
+        {!isChrome && (
+          <TextField label="Eyebrow" value={snippet.eyebrow} onChange={(v) => patch({ eyebrow: v })} />
+        )}
         <Row label="Template">
           <select
             className={inputCls}
@@ -157,22 +167,47 @@ export function ContentEditor({
           </select>
         </Row>
       </div>
-      <TextField label="Heading" value={snippet.heading} onChange={(v) => patch({ heading: v })} />
-      <TextField
-        label="Subheading"
-        multiline
-        value={snippet.subheading}
-        onChange={(v) => patch({ subheading: v })}
-      />
-      <div className="grid gap-4 sm:grid-cols-2">
+      {isRanking ? (
         <TextField
-          label="Button label"
-          value={snippet.ctaLabel}
-          onChange={(v) => patch({ ctaLabel: v })}
-          placeholder="Leave blank to hide"
+          label="Breadcrumbs ( › separated )"
+          value={(snippet.breadcrumbs ?? []).join(" › ")}
+          onChange={(v) =>
+            patch({
+              breadcrumbs: v.split("›").map((part) => part.trim()).filter(Boolean),
+            })
+          }
         />
-        <TextField label="Button link" value={snippet.ctaHref} onChange={(v) => patch({ ctaHref: v })} />
-      </div>
+      ) : isHub || isPlayground ? null : (
+        <>
+          <TextField label="Heading" value={snippet.heading} onChange={(v) => patch({ heading: v })} />
+          <TextField
+            label="Subheading"
+            multiline
+            value={snippet.subheading}
+            onChange={(v) => patch({ subheading: v })}
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="Button label"
+              value={snippet.ctaLabel}
+              onChange={(v) => patch({ ctaLabel: v })}
+              placeholder="Leave blank to hide"
+            />
+            <TextField label="Button link" value={snippet.ctaHref} onChange={(v) => patch({ ctaHref: v })} />
+          </div>
+        </>
+      )}
+
+      {isPlayground && (
+        <div className="space-y-4 border-t border-border pt-5">
+          <TextField
+            label="Toggle label"
+            value={snippet.toggleLabel ?? ""}
+            onChange={(v) => patch({ toggleLabel: v })}
+            placeholder="Leave blank to hide"
+          />
+        </div>
+      )}
 
       {isCode && (
         <div className="space-y-4 border-t border-border pt-5">
@@ -203,10 +238,11 @@ export function ContentEditor({
         </div>
       )}
 
+      {!isPlayground && (
       <div className="border-t border-border pt-5">
         <div className="flex items-center justify-between">
           <p className="text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
-            {isCode ? "Tabs" : isStats ? "Metrics" : "Features"}
+            {isCode ? "Tabs" : isStats ? "Metrics" : isChrome ? "Tabs" : "Features"}
           </p>
           <button
             type="button"
@@ -246,7 +282,7 @@ export function ContentEditor({
                     })
                   }
                 />
-                {!isCode && (
+                {!isCode && !isChrome && (
                   <TextField
                     label={isStats ? "Caption" : "Description"}
                     multiline
@@ -258,7 +294,7 @@ export function ContentEditor({
                     }
                   />
                 )}
-                {!isStats && !isCode && (
+                {!isStats && !isCode && !isChrome && (
                   <Row label="Icon">
                     <select
                       className={inputCls}
@@ -286,6 +322,7 @@ export function ContentEditor({
           ))}
         </div>
       </div>
+      )}
     </div>
   );
 }
@@ -312,7 +349,19 @@ export function StyleEditor({
               <button
                 key={preset.id}
                 type="button"
-                onClick={() => onChange({ ...snippet, style: { ...preset.style } })}
+                onClick={() =>
+                  onChange({
+                    ...snippet,
+                    style: {
+                      ...preset.style,
+                      ...(snippet.template === "contest-ranking" ||
+                      snippet.template === "problems-hub" ||
+                      snippet.template === "code-playground"
+                        ? { padding: 0 }
+                        : {}),
+                    },
+                  })
+                }
                 className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${
                   active
                     ? "border-foreground/60 bg-foreground/[0.08]"

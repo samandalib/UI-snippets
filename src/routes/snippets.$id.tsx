@@ -198,7 +198,13 @@ function Editor() {
                 snippet={snippet}
                 title={`${snippet.name} live preview`}
                 pageWidth={device === "mobile" ? 390 : 1280}
-                pageHeight={device === "mobile" ? 780 : 760}
+                pageHeight={
+                  device === "mobile"
+                    ? 780
+                    : snippet.template === "problems-hub" || snippet.template === "code-playground"
+                      ? 860
+                      : 760
+                }
                 className={`mx-auto overflow-hidden rounded-lg border border-border ${
                   device === "mobile" ? "w-[390px]" : "w-full"
                 }`}

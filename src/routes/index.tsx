@@ -1,6 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { FileText, Plus, SquareStack } from "lucide-react";
-import { saveSnippet } from "@/lib/snippets/store";
+import { useEffect } from "react";
+import { FileText, LayoutList, Play, Plus, SquareStack, Trophy } from "lucide-react";
+import {
+  ensurePlaygroundSnippet,
+  ensurePremierRound7Snippet,
+  ensureProblemsHubSnippet,
+  saveSnippet,
+} from "@/lib/snippets/store";
 import { createSnippet } from "@/lib/snippets/templates";
 import { TEMPLATE_BLURBS, TEMPLATE_LABELS } from "@/lib/snippets/types";
 import type { TemplateId } from "@/lib/snippets/types";
@@ -28,6 +34,27 @@ export const Route = createFileRoute("/")({
 
 function Library() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    ensurePremierRound7Snippet();
+    ensureProblemsHubSnippet();
+    ensurePlaygroundSnippet();
+  }, []);
+
+  const openPremierRound7 = () => {
+    const snippet = ensurePremierRound7Snippet();
+    navigate({ to: "/snippets/$id", params: { id: snippet.id } });
+  };
+
+  const openProblemsHub = () => {
+    const snippet = ensureProblemsHubSnippet();
+    navigate({ to: "/snippets/$id", params: { id: snippet.id } });
+  };
+
+  const openPlayground = () => {
+    const snippet = ensurePlaygroundSnippet();
+    navigate({ to: "/snippets/$id", params: { id: snippet.id } });
+  };
 
   const start = (template: TemplateId) => {
     const snippet = createSnippet(template, `${TEMPLATE_LABELS[template]} snippet`);
@@ -58,6 +85,68 @@ function Library() {
           </a>
         </header>
 
+
+        <section className="mt-14">
+          <h2 className="text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">
+            Featured
+          </h2>
+          <div className="mt-5 grid max-w-xl gap-3">
+          <button
+            type="button"
+            onClick={openPremierRound7}
+            className="group flex w-full rounded-xl border border-foreground/30 bg-card/60 p-5 text-left transition-colors hover:border-foreground/50"
+          >
+            <div className="flex items-start justify-between w-full">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Trophy className="size-4 text-foreground" />
+                  <h3 className="text-sm text-foreground">Premier Round 7 Ranking</h3>
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                  Competitive programming leaderboard with sidebar, tabs, and problem score grid.
+                </p>
+              </div>
+              <Plus className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={openProblemsHub}
+            className="group flex w-full rounded-xl border border-foreground/30 bg-card/60 p-5 text-left transition-colors hover:border-foreground/50"
+          >
+            <div className="flex items-start justify-between w-full">
+              <div>
+                <div className="flex items-center gap-2">
+                  <LayoutList className="size-4 text-foreground" />
+                  <h3 className="text-sm text-foreground">Problems hub</h3>
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                  Five-tab problem browser with filters, companies, and a live status feed.
+                </p>
+              </div>
+              <Plus className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={openPlayground}
+            className="group flex w-full rounded-xl border border-foreground/30 bg-card/60 p-5 text-left transition-colors hover:border-foreground/50"
+          >
+            <div className="flex items-start justify-between w-full">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Play className="size-4 text-foreground" />
+                  <h3 className="text-sm text-foreground">Code playground</h3>
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                  Editor with language picker, stdin/stdout panes, and a Run action.
+                </p>
+              </div>
+              <Plus className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+            </div>
+          </button>
+          </div>
+        </section>
 
         <section className="mt-14">
           <h2 className="text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">
