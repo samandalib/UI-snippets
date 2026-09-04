@@ -2,6 +2,7 @@ import { playgroundStyles, renderPlayground } from "./code-playground";
 import { iconSvg } from "./icons";
 import { problemsHubStyles, renderProblemsHub } from "./problems-hub";
 import { REPOVIVE_LOGO_SRC } from "./repovive-logo";
+import { roadmapsStyles, renderRoadmaps } from "./roadmaps";
 import type { LeaderboardEntry, ProblemCell, Snippet } from "./types";
 
 function esc(value: string): string {
@@ -443,7 +444,12 @@ ${problemsHubStyles(snippet, radius)}`
 .fs-root{min-height:100vh}
 .fs-frame,.fs-zoom{width:100%;max-width:none;padding:0;margin:0}
 ${playgroundStyles(snippet, radius, c.monoFamily, c.syntax)}`
-        : ""
+        : snippet.template === "roadmaps"
+          ? `
+.fs-root{min-height:100vh}
+.fs-frame,.fs-zoom{width:100%;max-width:none;padding:0;margin:0}
+${roadmapsStyles(snippet, radius)}`
+          : ""
 }
 `.trim();
 }
@@ -810,6 +816,7 @@ function codeDemo(snippet: Snippet): string {
 
 function body(snippet: Snippet): string {
  if (snippet.template === "code-playground") return renderPlayground(snippet);
+ if (snippet.template === "roadmaps") return renderRoadmaps(snippet);
  if (snippet.template === "problems-hub") return renderProblemsHub(snippet);
  if (snippet.template === "contest-ranking") return contestRanking(snippet);
  if (snippet.template === "code-demo") return codeDemo(snippet);

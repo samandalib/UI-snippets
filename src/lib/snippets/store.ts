@@ -97,6 +97,24 @@ export function ensurePlaygroundSnippet(): Snippet {
   return snippet;
 }
 
+export function ensureRoadmapsSnippet(): Snippet {
+  const list = read();
+  const existing = list.find((s) => s.template === "roadmaps" && s.name === "Roadmaps");
+  if (existing) {
+    // Keep chrome nav items in sync with the template defaults when empty.
+    if (!existing.items?.length) {
+      const fresh = createSnippet("roadmaps", "Roadmaps");
+      const next = { ...existing, items: fresh.items, heading: existing.heading || "Roadmaps" };
+      write(list.map((s) => (s.id === existing.id ? next : s)));
+      return next;
+    }
+    return existing;
+  }
+  const snippet = createSnippet("roadmaps", "Roadmaps");
+  write([snippet, ...list]);
+  return snippet;
+}
+
 export function subscribe(fn: () => void): () => void {
   if (!isBrowser()) return () => {};
   window.addEventListener("snippets:changed", fn);

@@ -111,10 +111,13 @@ export function ContentEditor({
   const isPlayground = snippet.template === "code-playground";
   const isRanking = snippet.template === "contest-ranking";
   const isHub = snippet.template === "problems-hub";
-  const isChrome = isRanking || isHub || isPlayground;
+  const isRoadmaps = snippet.template === "roadmaps";
+  const isChrome = isRanking || isHub || isPlayground || isRoadmaps;
 
   const hidableKeys: HidableKey[] = isPlayground
     ? ["code", "toggle"]
+    : isRoadmaps
+    ? ["items"]
     : isChrome
     ? ["items"]
     : isCode
@@ -177,6 +180,8 @@ export function ContentEditor({
             })
           }
         />
+      ) : isRoadmaps ? (
+        <TextField label="Title" value={snippet.heading} onChange={(v) => patch({ heading: v })} />
       ) : isHub || isPlayground ? null : (
         <>
           <TextField label="Heading" value={snippet.heading} onChange={(v) => patch({ heading: v })} />
@@ -356,7 +361,8 @@ export function StyleEditor({
                       ...preset.style,
                       ...(snippet.template === "contest-ranking" ||
                       snippet.template === "problems-hub" ||
-                      snippet.template === "code-playground"
+                      snippet.template === "code-playground" ||
+                      snippet.template === "roadmaps"
                         ? { padding: 0 }
                         : {}),
                     },

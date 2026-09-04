@@ -201,7 +201,9 @@ function Editor() {
                 pageHeight={
                   device === "mobile"
                     ? 780
-                    : snippet.template === "problems-hub" || snippet.template === "code-playground"
+                    : snippet.template === "problems-hub" ||
+                        snippet.template === "code-playground" ||
+                        snippet.template === "roadmaps"
                       ? 860
                       : 760
                 }

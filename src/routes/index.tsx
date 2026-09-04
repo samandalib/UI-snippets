@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { FileText, LayoutList, Play, Plus, SquareStack, Trophy } from "lucide-react";
+import { FileText, LayoutList, Map, Play, Plus, SquareStack, Trophy } from "lucide-react";
 import {
   ensurePlaygroundSnippet,
   ensurePremierRound7Snippet,
   ensureProblemsHubSnippet,
+  ensureRoadmapsSnippet,
   saveSnippet,
 } from "@/lib/snippets/store";
 import { createSnippet } from "@/lib/snippets/templates";
@@ -39,6 +40,7 @@ function Library() {
     ensurePremierRound7Snippet();
     ensureProblemsHubSnippet();
     ensurePlaygroundSnippet();
+    ensureRoadmapsSnippet();
   }, []);
 
   const openPremierRound7 = () => {
@@ -53,6 +55,11 @@ function Library() {
 
   const openPlayground = () => {
     const snippet = ensurePlaygroundSnippet();
+    navigate({ to: "/snippets/$id", params: { id: snippet.id } });
+  };
+
+  const openRoadmaps = () => {
+    const snippet = ensureRoadmapsSnippet();
     navigate({ to: "/snippets/$id", params: { id: snippet.id } });
   };
 
@@ -140,6 +147,24 @@ function Library() {
                 </div>
                 <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
                   Editor with language picker, stdin/stdout panes, and a Run action.
+                </p>
+              </div>
+              <Plus className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={openRoadmaps}
+            className="group flex w-full rounded-xl border border-foreground/30 bg-card/60 p-5 text-left transition-colors hover:border-foreground/50"
+          >
+            <div className="flex items-start justify-between w-full">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Map className="size-4 text-foreground" />
+                  <h3 className="text-sm text-foreground">Roadmaps</h3>
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                  Learning roadmap grid with category filters, sketches, and learner counts.
                 </p>
               </div>
               <Plus className="size-4 text-muted-foreground transition-colors group-hover:text-foreground" />

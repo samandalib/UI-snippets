@@ -297,6 +297,35 @@ console.log(text);`,
     };
   }
 
+  if (template === "roadmaps") {
+    return {
+      ...base,
+      name: name || "Roadmaps",
+      eyebrow: "",
+      heading: "Roadmaps",
+      subheading: "",
+      ctaLabel: "Join",
+      toggleLabel: "6,506",
+      items: items([
+        { title: "All", body: "", icon: "layers" },
+        { title: "Competitive Programming", body: "", icon: "gauge" },
+        { title: "Interview Prep", body: "", icon: "sparkles" },
+      ]),
+      hidden: { eyebrow: true, heading: true, subheading: true },
+      style: {
+        ...BASE_STYLE,
+        preset: "vercel",
+        scheme: "dark",
+        background: "#000000",
+        accent: "#0072f5",
+        radius: 12,
+        maxWidth: 1200,
+        showIcons: false,
+        padding: 0,
+      },
+    };
+  }
+
   return {
     ...base,
     eyebrow: "Why teams choose us",

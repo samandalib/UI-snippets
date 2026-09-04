@@ -5,7 +5,8 @@ export type TemplateId =
   | "code-demo"
   | "contest-ranking"
   | "problems-hub"
-  | "code-playground";
+  | "code-playground"
+  | "roadmaps";
 
 export type ProblemCell =
   | { kind: "solved"; points: number; time: string; penalty?: number }
@@ -101,6 +102,7 @@ export const TEMPLATE_LABELS: Record<TemplateId, string> = {
   "contest-ranking": "Contest ranking",
   "problems-hub": "Problems hub",
   "code-playground": "Code playground",
+  roadmaps: "Roadmaps",
 };
 
 export const TEMPLATE_BLURBS: Record<TemplateId, string> = {
@@ -111,6 +113,7 @@ export const TEMPLATE_BLURBS: Record<TemplateId, string> = {
   "contest-ranking": "Competitive programming leaderboard with sidebar, tabs and score grid.",
   "problems-hub": "Interactive problem browser with five tabs, filters and status.",
   "code-playground": "Editor with language picker, stdin/stdout panes, and a Run action.",
+  roadmaps: "Learning roadmap grid with category filters, sketches, and learner counts.",
 };
 
 export const ICON_KEYS: IconKey[] = [
