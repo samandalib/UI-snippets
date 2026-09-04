@@ -1,3 +1,4 @@
+import { GREEDY_SKETCH_SRC } from "./greedy-sketch";
 import { REPOVIVE_LOGO_SRC } from "./repovive-logo";
 import type { Snippet } from "./types";
 
@@ -188,33 +189,7 @@ const SKETCHES: Record<string, string> = {
   </g>
 </svg>`,
 
-  greedy: `<svg viewBox="0 0 340 168" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-  <g font-family="${MONO}" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="40" y="22" width="88" height="14" rx="4" fill="none" stroke="${G}" stroke-width="1.75"/>
-    <path d="M78 16l3.2 3.2 6.5-6.5" fill="none" stroke="${G}" stroke-width="1.8"/>
-    <rect x="150" y="22" width="88" height="14" rx="4" fill="none" stroke="${W}" stroke-width="1.25"/>
-    <rect x="62" y="44" width="110" height="14" rx="4" fill="none" stroke="${W}" stroke-width="1.25"/>
-    <rect x="194" y="44" width="88" height="14" rx="4" fill="none" stroke="${G}" stroke-width="1.75"/>
-    <path d="M232 38l3.2 3.2 6.5-6.5" fill="none" stroke="${G}" stroke-width="1.8"/>
-    <rect x="84" y="66" width="132" height="14" rx="4" fill="none" stroke="${W}" stroke-width="1.25"/>
-    <rect x="40" y="88" width="66" height="14" rx="4" fill="none" stroke="${W}" stroke-width="1.25"/>
-    <rect x="216" y="88" width="88" height="14" rx="4" fill="none" stroke="${G}" stroke-width="1.75"/>
-    <path d="M254 82l3.2 3.2 6.5-6.5" fill="none" stroke="${G}" stroke-width="1.8"/>
-    <path d="M40 118h264" fill="none" stroke="${W}" stroke-width="1" opacity=".55"/>
-    <g stroke="${W}" stroke-width="1" opacity=".55">
-      <line x1="40" y1="114" x2="40" y2="122"/><line x1="84" y1="114" x2="84" y2="122"/>
-      <line x1="128" y1="114" x2="128" y2="122"/><line x1="172" y1="114" x2="172" y2="122"/>
-      <line x1="216" y1="114" x2="216" y2="122"/><line x1="260" y1="114" x2="260" y2="122"/>
-      <line x1="304" y1="114" x2="304" y2="122"/>
-    </g>
-    <g font-size="10" fill="${S}" text-anchor="middle">
-      <text x="40" y="136">0</text><text x="84" y="136">2</text><text x="128" y="136">4</text>
-      <text x="172" y="136">6</text><text x="216" y="136">8</text><text x="260" y="136">10</text>
-      <text x="304" y="136">12</text>
-    </g>
-    <text x="40" y="158" fill="${M}" font-size="12">pick min end</text>
-  </g>
-</svg>`,
+  greedy: `<img src="${GREEDY_SKETCH_SRC}" width="840" height="460" alt="" aria-hidden="true">`,
 };
 
 const ROADMAPS: Roadmap[] = [
@@ -334,7 +309,7 @@ export function roadmapsStyles(snippet: Snippet, radius: number): string {
 .fs-rm-card{display:flex;flex-direction:column;aspect-ratio:1/1;border:1px solid var(--fs-border);border-radius:0;overflow:hidden;background:transparent;min-height:0;transition:border-color .15s ease}
 .fs-rm-card:hover{border-color:color-mix(in srgb, var(--fs-border) 35%, var(--fs-text))}
 .fs-rm-art{background:transparent;padding:10px 12px 6px;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;border-bottom:1px solid var(--fs-border)}
-.fs-rm-art svg{width:100%;height:100%;display:block;color:var(--fs-text);object-fit:contain}
+.fs-rm-art svg,.fs-rm-art img{width:100%;height:100%;display:block;color:var(--fs-text);object-fit:contain}
 .fs-rm-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;flex:0 0 auto;background:transparent}
 .fs-rm-name{margin:0;font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.25;color:var(--fs-text)}
 .fs-rm-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
